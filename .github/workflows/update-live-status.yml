@@ -151,9 +151,9 @@ jobs:
 
           twitch="$(resolve_probe "$twitch_probe" "$(jq -r '.platforms.twitch // false' <<<"$current")")"
 
-          confirmed_online=false
-          if [[ "$twitch_probe" == online ]]; then
-            confirmed_online=true
+          confirmed_state=false
+          if [[ "$twitch_probe" == online || "$twitch_probe" == offline ]]; then
+            confirmed_state=true
           fi
           online="$twitch"
 
@@ -170,10 +170,10 @@ jobs:
           fi
 
           refresh_due=false
-          if [[ "$online" == true && "$confirmed_online" == true ]]; then
+          if [[ "$confirmed_state" == true ]]; then
             current_expiry="$(jq -r '.expiresAt // empty' <<<"$current")"
             expiry_epoch="$(date -u -d "$current_expiry" +%s 2>/dev/null || printf '0')"
-            refresh_threshold="$(date -u -d '+15 minutes' +%s)"
+            refresh_threshold="$(date -u -d '+10 minutes' +%s)"
             if (( expiry_epoch <= refresh_threshold )); then
               refresh_due=true
             fi
@@ -186,12 +186,14 @@ jobs:
 
           checked_at="$(jq -r '.checkedAt' live-status/probes.json)"
           expires_at=""
-          if [[ "$online" == true ]]; then
-            if [[ "$confirmed_online" == true ]]; then
+          if [[ "$confirmed_state" == true ]]; then
+            if [[ "$online" == true ]]; then
               expires_at="$(date -u -d '+45 minutes' +'%Y-%m-%dT%H:%M:%SZ')"
             else
-              expires_at="$(jq -r '.expiresAt // empty' <<<"$current")"
+              expires_at="$(date -u -d '+30 minutes' +'%Y-%m-%dT%H:%M:%SZ')"
             fi
+          else
+            expires_at="$(jq -r '.expiresAt // empty' <<<"$current")"
           fi
 
           jq -n \

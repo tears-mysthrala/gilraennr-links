@@ -6,7 +6,7 @@ La página responde a tres preguntas en este orden:
 
 1. **¿De quién es esta página?** Avatar, nombre y una descripción corta establecen la identidad sin ocupar toda la primera pantalla.
 2. **¿Qué debería abrir ahora?** Un único panel destacado concentra la acción principal. Puede cambiarse desde `featuredLinkId` sin tocar HTML.
-   La tarjeta principal incorpora el logotipo de Twitch y, cuando el canal está emitiendo, un distintivo rojo compacto `En directo`. El estado queda unido a la plataforma que lo origina y no compite con la identidad del perfil.
+   La tarjeta principal incorpora el logotipo de Twitch y un estado verificable: rojo con pulso cuando está `En directo`, neutro cuando Twitch confirma `Offline` y oculto si el dato ha caducado o no es fiable. El estado queda unido a la plataforma que lo origina y no compite con la identidad del perfil.
 3. **¿Qué más hay?** Directos y vídeos, apoyo, contacto profesional, redes y partners se agrupan por intención. No compiten como una lista de botones idénticos.
 
 En móvil, el recorrido es lineal y los objetivos táctiles son amplios. En escritorio, la cabecera de perfil y el destino principal comparten la primera vista; las secciones usan una cuadrícula de hasta tres columnas.

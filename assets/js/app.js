@@ -33,7 +33,6 @@
     "link"
   ]);
   const VARIANTS = new Set(["default", "streaming", "support", "contact", "social", "partners"]);
-  const LIVE_PLATFORM_LABELS = new Map([["twitch", "Twitch"]]);
   const debugMode =
     new URLSearchParams(window.location.search).has("debug") ||
     ["localhost", "127.0.0.1"].includes(window.location.hostname);
@@ -47,6 +46,7 @@
     handle: document.querySelector("#profile-handle"),
     bio: document.querySelector("#profile-bio"),
     liveIndicator: document.querySelector("#live-indicator"),
+    liveIndicatorText: document.querySelector("#live-indicator-text"),
     featuredCard: document.querySelector("#featured-card"),
     featuredIconUse: document.querySelector("#featured-icon-use"),
     featuredLabel: document.querySelector("#featured-label"),
@@ -508,6 +508,7 @@
     window.clearTimeout(liveStatusExpiryTimer);
     liveStatusExpiryTimer = 0;
     elements.liveIndicator.hidden = true;
+    elements.liveIndicator.classList.remove("is-live", "is-offline");
     elements.liveIndicator.removeAttribute("aria-label");
     elements.liveIndicator.removeAttribute("title");
   }
@@ -522,26 +523,28 @@
       !Array.isArray(source.platforms)
         ? source.platforms
         : {};
-    const livePlatforms = [...LIVE_PLATFORM_LABELS]
-      .filter(([id]) => platformsSource[id] === true)
-      .map(([, label]) => label);
     const isFresh =
-      source.online === true &&
       Number.isFinite(expiresAt) &&
       expiresAt > now &&
       expiresAt <= now + MAX_LIVE_TTL_MS;
+    const isLive = source.online === true && platformsSource.twitch === true;
+    const isOffline = source.online === false && platformsSource.twitch === false;
 
     if (
       !isFresh ||
-      !livePlatforms.length ||
+      (!isLive && !isOffline) ||
       elements.featuredCard.dataset.icon !== "twitch"
     ) {
       hideLiveIndicator();
       return;
     }
 
-    const platformText = livePlatforms.join(", ");
-    const accessibleText = `GilraenNR está en directo en ${platformText}`;
+    const accessibleText = isLive
+      ? "GilraenNR está en directo en Twitch"
+      : "GilraenNR no está en directo en Twitch";
+    elements.liveIndicator.classList.toggle("is-live", isLive);
+    elements.liveIndicator.classList.toggle("is-offline", isOffline);
+    elements.liveIndicatorText.textContent = isLive ? "En directo" : "Offline";
     elements.liveIndicator.setAttribute("aria-label", accessibleText);
     elements.liveIndicator.title = accessibleText;
     elements.liveIndicator.hidden = false;

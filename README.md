@@ -96,13 +96,13 @@ El trabajo de comprobación solo tiene permiso de lectura. Un segundo trabajo, a
 
 Para evitar que la caché de `raw.githubusercontent.com` retrase un cambio de estado, el navegador consulta primero el SHA actual de la rama `status` mediante la API pública de GitHub y descarga después el JSON asociado a ese commit inmutable. Si la API falla o limita las peticiones, vuelve automáticamente a la URL de GitHub Raw configurada.
 
-La página consulta el estado cada 120 segundos y solo muestra el distintivo rojo `En directo` dentro de la tarjeta principal de Twitch cuando:
+La página consulta el estado cada 120 segundos. Dentro de la tarjeta principal de Twitch muestra un distintivo rojo con pulso `En directo` o uno neutro `Offline` únicamente cuando:
 
-- Twitch está confirmado en directo;
+- Twitch ha confirmado expresamente el estado correspondiente;
 - el snapshot tiene una fecha `expiresAt` válida;
 - esa fecha no ha vencido ni supera dos horas desde el reloj del visitante.
 
-Los snapshots positivos caducan a los 45 minutos y se renuevan cuando quedan menos de 15. Los fallos de red o del extractor producen un estado desconocido: no crean un falso positivo y un indicador antiguo termina desapareciendo. Los commits de estado viven en una rama separada, así que no ensucian `main` ni reconstruyen el sitio publicado desde esa rama. En Cloudflare Pages, conserva además la exclusión `content/*` documentada más abajo.
+Los snapshots en directo caducan a los 45 minutos y los offline, a los 30. Ambos se renuevan cuando quedan menos de 10 minutos. Los fallos de red o del extractor producen un estado desconocido: no cambian el último estado confirmado y el indicador termina desapareciendo al caducar. Los commits de estado viven en una rama separada, así que no ensucian `main` ni reconstruyen el sitio publicado desde esa rama. En Cloudflare Pages, conserva además la exclusión `content/*` documentada más abajo.
 
 GitHub puede retrasar los workflows programados. El indicador es deliberadamente informativo y no una garantía en tiempo real. Para lanzar una comprobación inmediata usa **Actions → Update live status → Run workflow**.
 
