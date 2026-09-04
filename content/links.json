@@ -36,6 +36,14 @@
       "title": "Redes",
       "description": "Actualizaciones y contenido fuera de los directos.",
       "variant": "social",
+      "order": 40,
+      "enabled": true
+    },
+    {
+      "id": "contact",
+      "title": "Contacto profesional",
+      "description": "Colaboraciones, prensa y propuestas.",
+      "variant": "contact",
       "order": 30,
       "enabled": true
     },
@@ -44,7 +52,7 @@
       "title": "Partners y ofertas",
       "description": "Tiendas y servicios vinculados al canal.",
       "variant": "partners",
-      "order": 40,
+      "order": 50,
       "enabled": true
     }
   ],
@@ -118,6 +126,18 @@
       "enabled": true,
       "order": 20,
       "featured": false
+    },
+    {
+      "id": "business-email",
+      "title": "Correo profesional",
+      "url": "mailto:gilraennr@gmail.com",
+      "description": "Para colaboraciones y propuestas profesionales.",
+      "icon": "mail",
+      "category": "contact",
+      "enabled": true,
+      "order": 10,
+      "featured": false,
+      "label": "Contacto"
     },
     {
       "id": "instant-gaming",

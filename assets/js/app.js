@@ -26,9 +26,10 @@
     "patreon",
     "gamepad",
     "store",
+    "mail",
     "link"
   ]);
-  const VARIANTS = new Set(["default", "streaming", "support", "social", "partners"]);
+  const VARIANTS = new Set(["default", "streaming", "support", "contact", "social", "partners"]);
   const LIVE_PLATFORM_LABELS = new Map([
     ["twitch", "Twitch"],
     ["youtube", "YouTube"],
@@ -107,6 +108,25 @@
     return sameOrigin || allowedRemoteImage ? url : null;
   }
 
+  function safeLinkUrl(value) {
+    if (typeof value !== "string" || !value.trim() || value.length > 2048) return null;
+
+    const candidate = value.trim();
+    const webUrl = safeUrl(candidate);
+    if (webUrl) return webUrl;
+
+    try {
+      const url = new URL(candidate);
+      if (url.protocol !== "mailto:" || url.search || url.hash) return null;
+
+      const address = candidate.slice("mailto:".length);
+      const validAddress = /^[a-z0-9.!#$&'*+/=?^_`{|}~-]+@[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+$/i;
+      return validAddress.test(address) ? url : null;
+    } catch {
+      return null;
+    }
+  }
+
   function safeStatusUrl(value) {
     const url = safeUrl(value);
     return url?.hostname === "raw.githubusercontent.com" ? url : null;
@@ -163,7 +183,7 @@
       if (!entry || typeof entry !== "object" || entry.enabled === false) continue;
 
       const id = cleanId(entry.id, `link-${index + 1}`);
-      const url = safeUrl(entry.url);
+      const url = safeLinkUrl(entry.url);
       const title = cleanText(entry.title, "", 100);
       const category = cleanId(entry.category, "more");
 
@@ -239,7 +259,11 @@
 
   function configureExternalLink(anchor, url) {
     anchor.href = url.href;
-    const isExternal = url.origin !== window.location.origin;
+    anchor.removeAttribute("target");
+    anchor.removeAttribute("rel");
+    const isExternal =
+      (url.protocol === "https:" || url.protocol === "http:") &&
+      url.origin !== window.location.origin;
 
     if (isExternal) {
       anchor.target = "_blank";
@@ -370,7 +394,7 @@
       externalNote.textContent = " (se abre en una pestaña nueva)";
       card.append(externalNote);
     }
-    card.append(createIcon("external", "link-card__arrow"));
+    card.append(createIcon(isExternal ? "external" : "arrow", "link-card__arrow"));
     return card;
   }
 

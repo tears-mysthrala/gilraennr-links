@@ -78,7 +78,7 @@
         "title": { "type": "string", "minLength": 1, "maxLength": 100 },
         "description": { "type": "string", "maxLength": 220 },
         "variant": {
-          "enum": ["default", "streaming", "support", "social", "partners"]
+          "enum": ["default", "streaming", "support", "contact", "social", "partners"]
         },
         "order": { "type": "number" },
         "priority": { "type": "number" },
@@ -99,12 +99,15 @@
         "url": {
           "type": "string",
           "format": "uri",
-          "pattern": "^https://",
+          "anyOf": [
+            { "pattern": "^https://" },
+            { "pattern": "^mailto:[A-Za-z0-9.!#$&'*+/=?^_`{|}~-]+@[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?(?:\\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)+$" }
+          ],
           "maxLength": 2048
         },
         "description": { "type": "string", "maxLength": 240 },
         "icon": {
-          "enum": ["twitch", "youtube", "kick", "x", "instagram", "patreon", "gamepad", "store", "link"]
+          "enum": ["twitch", "youtube", "kick", "x", "instagram", "patreon", "gamepad", "store", "mail", "link"]
         },
         "category": {
           "type": "string",

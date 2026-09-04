@@ -7,15 +7,15 @@ La página responde a tres preguntas en este orden:
 1. **¿De quién es esta página?** Avatar, nombre y una descripción corta establecen la identidad sin ocupar toda la primera pantalla.
 2. **¿Qué debería abrir ahora?** Un único panel destacado concentra la acción principal. Puede cambiarse desde `featuredLinkId` sin tocar HTML.
    Si hay un directo confirmado, una píldora verde compacta junto al identificador lo comunica sin competir con el CTA.
-3. **¿Qué más hay?** Directos y vídeos, apoyo, redes y partners se agrupan por intención. No compiten como una lista de botones idénticos.
+3. **¿Qué más hay?** Directos y vídeos, apoyo, contacto profesional, redes y partners se agrupan por intención. No compiten como una lista de botones idénticos.
 
 En móvil, el recorrido es lineal y los objetivos táctiles son amplios. En escritorio, la cabecera de perfil y el destino principal comparten la primera vista; las secciones usan una cuadrícula de hasta tres columnas.
 
 ## Identidad visual
 
-La base berenjena conserva una relación con el Linktree anterior sin copiarlo. Orquídea, coral, ámbar, azul cartográfico y verde musgo recogen los tonos del avatar y de las miniaturas recientes. En los bordes aparecen curvas topográficas, una ruta de nodos y correspondencia dibujada con líneas tenues: referencias a la exploración de `Resonance`, los diagramas de `Masterplan Tycoon` y los sobres de `Cat Mail Co`. El centro se mantiene limpio para no comprometer la lectura.
+La base berenjena conserva una relación con el Linktree anterior sin copiarlo. Orquídea, coral, ámbar, azul cartográfico y verde musgo recogen los tonos del avatar y de las miniaturas recientes. Una ilustración original sitúa la página sobre una mesa nocturna de investigación: luz cálida, mapa, cartas, cuaderno, mando y pequeñas piezas de puzle. Son referencias generales al tipo de juegos del canal, sin copiar miniaturas ni arte de ningún título. Hay composiciones independientes para móvil y escritorio, con el centro deliberadamente oscuro y despejado para proteger la lectura.
 
-El pequeño recorrido de nodos del panel principal sustituye la señal de audio genérica. Las tarjetas recuperan parte de la presencia visual de Linktree con superficies más luminosas, una arista de color y las señales cromáticas reconocibles de cada plataforma, pero mantienen secciones y descripciones para conservar la jerarquía de una página de creadora.
+Las tarjetas recuperan parte de la presencia visual de Linktree con superficies más luminosas, una arista de color y las señales cromáticas reconocibles de cada plataforma, pero mantienen secciones y descripciones para conservar la jerarquía de una página de creadora. El correo profesional ocupa una sección propia y no queda escondido entre redes o enlaces comerciales.
 
 La tipografía usa la familia variable del sistema para evitar descargas y cambios de layout. El nombre tiene peso y escala propios; el resto se mantiene sobrio para que enlaces y descripciones sigan siendo fáciles de leer.
 

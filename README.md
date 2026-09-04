@@ -16,7 +16,7 @@ Página estática de enlaces para GilraenNR. No usa framework, gestor de paquete
 ├── assets/
 │   ├── css/style.css          # Diseño responsive y estados accesibles
 │   ├── js/app.js              # Carga, validación y renderizado del JSON
-│   └── images/                # Avatar, favicon y Open Graph
+│   └── images/                # Avatar, favicon, Open Graph y fondos responsive
 ├── content/
 │   ├── links.json             # Contenido editable principal
 │   ├── fallback.json          # Copia local estable
@@ -32,7 +32,7 @@ La fuente editorial es [`content/links.json`](content/links.json). Cada enlace a
 - `id`: identificador único en minúsculas.
 - `title`, `url` y `category`: campos necesarios para renderizarlo.
 - `description`: texto opcional.
-- `icon`: `twitch`, `youtube`, `kick`, `x`, `instagram`, `patreon`, `gamepad`, `store` o `link`.
+- `icon`: `twitch`, `youtube`, `kick`, `x`, `instagram`, `patreon`, `gamepad`, `store`, `mail` o `link`.
 - `enabled`: usa `false` para ocultarlo sin borrarlo.
 - `order` o `priority`: número menor = aparece antes.
 - `featured`: candidato a CTA principal.
@@ -48,7 +48,7 @@ Las secciones se definen en `sections`. Su `id` debe coincidir con el `category`
 Antes de guardar:
 
 1. Mantén JSON válido: comillas dobles y sin comas finales.
-2. Usa únicamente URLs `https://` para destinos públicos.
+2. Usa URLs `https://` para destinos públicos. El contacto admite además un `mailto:` simple, sin asunto ni parámetros.
 3. Revisa que cada `id` sea único.
 4. Conserva la declaración de afiliación si hay enlaces comerciales.
 
@@ -72,7 +72,7 @@ El orden de recuperación es:
 
 Así, un error de red, un HTTP no satisfactorio, un JSON mal formado o la ausencia de campos opcionales no deja la página vacía. Añade `?debug=1` a la URL para ver de forma discreta qué fuente se ha utilizado. En producción normal no se muestra ningún aviso, salvo que fallen ambas fuentes y sea necesario ofrecer la acción de reintento.
 
-El JSON remoto se trata como entrada no confiable: el renderizador usa `textContent`, no inserta HTML remoto, limita longitudes, solo admite iconos conocidos y rechaza destinos que no sean HTTPS. Los avatares solo pueden estar en `assets/` o en `raw.githubusercontent.com`, en línea con la CSP. Los enlaces externos se abren con `noopener noreferrer`.
+El JSON remoto se trata como entrada no confiable: el renderizador usa `textContent`, no inserta HTML remoto, limita longitudes, solo admite iconos conocidos y rechaza destinos que no sean HTTPS o un correo `mailto:` válido sin parámetros. Los avatares solo pueden estar en `assets/` o en `raw.githubusercontent.com`, en línea con la CSP. Los enlaces web externos se abren con `noopener noreferrer`; el correo abre el cliente de correo del visitante.
 
 ### Cambiar la URL de GitHub Raw
 

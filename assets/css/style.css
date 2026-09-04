@@ -122,6 +122,10 @@ svg {
   z-index: 0;
   inset: 0;
   overflow: hidden;
+  background-color: var(--ink-deep);
+  background-image: url("../images/cozy-desk-mobile.webp");
+  background-position: center top;
+  background-size: cover;
   pointer-events: none;
 }
 
@@ -129,68 +133,9 @@ svg {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(circle at 16% 28%, rgba(117, 139, 112, 0.09), transparent 24rem),
-    radial-gradient(circle at 86% 72%, rgba(238, 139, 104, 0.07), transparent 28rem);
+    radial-gradient(ellipse at 50% 42%, rgba(15, 9, 20, 0.3), rgba(15, 9, 20, 0.68) 74%),
+    linear-gradient(180deg, rgba(22, 13, 29, 0.34), rgba(15, 9, 20, 0.7));
   content: "";
-}
-
-.ambient-motif {
-  position: absolute;
-  display: block;
-  overflow: visible;
-  fill: none;
-  stroke: currentColor;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.ambient-motif--contours {
-  top: 7rem;
-  left: -9rem;
-  width: 31rem;
-  color: #8ca084;
-  opacity: 0.1;
-  stroke-width: 2;
-  transform: rotate(-8deg);
-}
-
-.ambient-motif--route {
-  top: 5rem;
-  right: -5rem;
-  width: 32rem;
-  color: #9eacd2;
-  opacity: 0.13;
-}
-
-.ambient-route-line {
-  stroke-width: 2;
-}
-
-.ambient-route-line--secondary {
-  stroke-dasharray: 4 9;
-}
-
-.ambient-route-nodes {
-  fill: var(--ink);
-  stroke-width: 3;
-}
-
-.ambient-motif--mail {
-  right: 8%;
-  bottom: -3rem;
-  width: 19rem;
-  color: var(--ember-soft);
-  opacity: 0.09;
-  stroke-width: 2;
-  transform: rotate(7deg);
-}
-
-.ambient-mail-stamp {
-  stroke-dasharray: 2 5;
-}
-
-.ambient-mail-note {
-  stroke: var(--candle);
 }
 
 .site-header,
@@ -403,41 +348,6 @@ svg {
   visibility: hidden;
 }
 
-.featured__signal {
-  position: relative;
-  align-self: start;
-  width: 10rem;
-  height: 4rem;
-}
-
-.featured__signal::before {
-  position: absolute;
-  top: 1.85rem;
-  left: 0.5rem;
-  width: 8.7rem;
-  height: 1px;
-  background: linear-gradient(90deg, rgba(241, 184, 255, 0.22), rgba(255, 208, 138, 0.72), rgba(241, 184, 255, 0.22));
-  content: "";
-  transform: rotate(-9deg);
-  transform-origin: left center;
-}
-
-.featured__signal span {
-  position: absolute;
-  width: 0.95rem;
-  height: 0.95rem;
-  background: var(--featured-accent);
-  border: 2px solid rgba(255, 248, 255, 0.34);
-  border-radius: 50%;
-  opacity: 0.82;
-}
-
-.featured__signal span:nth-child(1) { top: 2.05rem; left: 0; width: 0.65rem; height: 0.65rem; }
-.featured__signal span:nth-child(2) { top: 1.05rem; left: 2.1rem; border-radius: 0.2rem; transform: rotate(45deg); }
-.featured__signal span:nth-child(3) { top: 1.55rem; left: 4.45rem; width: 0.72rem; height: 0.72rem; }
-.featured__signal span:nth-child(4) { top: 0.45rem; left: 6.8rem; background: var(--candle); }
-.featured__signal span:nth-child(5) { top: 0.9rem; left: 9rem; width: 0.62rem; height: 0.62rem; border-radius: 0.15rem; transform: rotate(12deg); }
-
 .featured__label {
   color: var(--featured-accent);
 }
@@ -521,26 +431,12 @@ svg {
 }
 
 .section-heading h2 {
-  display: flex;
-  gap: 0.65rem;
-  align-items: center;
   margin: 0;
   font-family: var(--font-display);
   font-size: clamp(1.55rem, 5vw, 2.15rem);
   font-weight: 760;
   letter-spacing: -0.045em;
   line-height: 1.1;
-}
-
-.section-heading h2::before {
-  width: 0.62rem;
-  height: 0.62rem;
-  flex: 0 0 auto;
-  border: 2px solid var(--orchid-bright);
-  border-radius: 50%;
-  background: rgba(238, 139, 104, 0.3);
-  box-shadow: 0 0 0 4px rgba(217, 154, 232, 0.08);
-  content: "";
 }
 
 .section-heading p {
@@ -651,6 +547,12 @@ svg {
   background: rgba(255, 208, 138, 0.1);
 }
 
+.link-card[data-icon="mail"] .link-card__icon {
+  border-color: rgba(255, 208, 138, 0.34);
+  color: #2a182c;
+  background: linear-gradient(145deg, #ffd08a, #f4b29a);
+}
+
 .link-card__body {
   min-width: 0;
 }
@@ -711,6 +613,15 @@ svg {
 .content-section[data-variant="support"] .link-card {
   border-color: rgba(238, 139, 104, 0.46);
   background: linear-gradient(110deg, rgba(238, 139, 104, 0.2), rgba(48, 25, 51, 0.94) 58%);
+}
+
+.content-section[data-variant="contact"] .link-grid {
+  grid-template-columns: 1fr;
+}
+
+.content-section[data-variant="contact"] .link-card {
+  border-color: rgba(255, 208, 138, 0.4);
+  background: linear-gradient(110deg, rgba(255, 208, 138, 0.16), rgba(48, 25, 51, 0.95) 62%);
 }
 
 .content-section[data-variant="social"] .link-grid {
@@ -875,30 +786,12 @@ html.is-ready .site-footer {
   to { background-position: -220% 0; }
 }
 
-@media (max-width: 37.999rem) {
-  .ambient-motif--contours {
-    top: 6rem;
-    left: -12rem;
-    width: 25rem;
-    opacity: 0.08;
-  }
-
-  .ambient-motif--route {
-    top: 19rem;
-    right: -11rem;
-    width: 27rem;
-    opacity: 0.1;
-  }
-
-  .ambient-motif--mail {
-    right: -5rem;
-    bottom: -1rem;
-    width: 15rem;
-    opacity: 0.07;
-  }
-}
-
 @media (min-width: 38rem) {
+  .ambient-scene {
+    background-image: url("../images/cozy-desk-wide.webp");
+    background-position: center top;
+  }
+
   .site-header,
   .page-shell,
   .site-footer {
@@ -939,7 +832,8 @@ html.is-ready .site-footer {
     display: block;
   }
 
-  .content-section[data-variant="support"] .link-grid {
+  .content-section[data-variant="support"] .link-grid,
+  .content-section[data-variant="contact"] .link-grid {
     grid-template-columns: 1fr;
   }
 
@@ -1005,12 +899,12 @@ html.is-ready .site-footer {
   }
 
   .content-section[data-variant="support"],
-  .content-section[data-variant="social"] {
+  .content-section[data-variant="contact"] {
     grid-column: span 6;
   }
 
   .content-section[data-variant="support"] .link-card,
-  .content-section[data-variant="social"] .link-card {
+  .content-section[data-variant="contact"] .link-card {
     min-height: 7rem;
   }
 
