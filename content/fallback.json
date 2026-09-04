@@ -6,6 +6,11 @@
     "image": "assets/images/avatar.webp",
     "bio": "Directos y vídeos de juegos, simuladores y aventuras con chat."
   },
+  "liveStatus": {
+    "enabled": true,
+    "url": "https://raw.githubusercontent.com/tears-mysthrala/gilraennr-links/status/content/status.json",
+    "pollSeconds": 90
+  },
   "featuredLinkId": "twitch",
   "disclosure": "Algunos enlaces de esta sección son de afiliación. Si compras a través de ellos, GilraenNR puede recibir una comisión sin coste adicional para ti.",
   "sections": [

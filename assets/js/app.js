@@ -13,6 +13,7 @@
   const MAX_SECTION_ENTRIES = 150;
   const MAX_LINKS = 100;
   const MAX_SECTIONS = 30;
+  const MAX_LIVE_TTL_MS = 2 * 60 * 60 * 1000;
   const DEFAULT_AFFILIATE_DISCLOSURE =
     "Este es un enlace de afiliación. Si compras a través de él, GilraenNR puede recibir una comisión sin coste adicional para ti.";
 
@@ -28,6 +29,11 @@
     "link"
   ]);
   const VARIANTS = new Set(["default", "streaming", "support", "social", "partners"]);
+  const LIVE_PLATFORM_LABELS = new Map([
+    ["twitch", "Twitch"],
+    ["youtube", "YouTube"],
+    ["kick", "Kick"]
+  ]);
   const debugMode =
     new URLSearchParams(window.location.search).has("debug") ||
     ["localhost", "127.0.0.1"].includes(window.location.hostname);
@@ -40,6 +46,7 @@
     name: document.querySelector("#profile-name"),
     handle: document.querySelector("#profile-handle"),
     bio: document.querySelector("#profile-bio"),
+    liveIndicator: document.querySelector("#live-indicator"),
     featuredCard: document.querySelector("#featured-card"),
     featuredLabel: document.querySelector("#featured-label"),
     featuredTitle: document.querySelector("#featured-title"),
@@ -100,6 +107,17 @@
     return sameOrigin || allowedRemoteImage ? url : null;
   }
 
+  function safeStatusUrl(value) {
+    const url = safeUrl(value);
+    return url?.hostname === "raw.githubusercontent.com" ? url : null;
+  }
+
+  function boundedNumber(value, fallback, minimum, maximum) {
+    const number = Number(value);
+    if (!Number.isFinite(number)) return fallback;
+    return Math.min(maximum, Math.max(minimum, number));
+  }
+
   function normalizeData(raw) {
     const source = raw && typeof raw === "object" && !Array.isArray(raw) ? raw : {};
     const rawProfile =
@@ -117,6 +135,13 @@
       ),
       image: safeImageUrl(rawProfile.image)
     };
+    const rawLiveStatus =
+      source.liveStatus &&
+      typeof source.liveStatus === "object" &&
+      !Array.isArray(source.liveStatus)
+        ? source.liveStatus
+        : {};
+    const liveStatusUrl = safeStatusUrl(rawLiveStatus.url);
 
     const rawSections = Array.isArray(source.sections)
       ? source.sections.slice(0, MAX_SECTION_ENTRIES)
@@ -188,6 +213,13 @@
       profile,
       links,
       sections,
+      liveStatus: {
+        enabled: rawLiveStatus.enabled !== false && Boolean(liveStatusUrl),
+        url: liveStatusUrl,
+        pollMs: Math.round(
+          boundedNumber(rawLiveStatus.pollSeconds, 90, 30, 300) * 1000
+        )
+      },
       featuredLinkId: cleanId(source.featuredLinkId, ""),
       disclosure: cleanText(source.disclosure, DEFAULT_AFFILIATE_DISCLOSURE, 400)
     };
@@ -437,6 +469,80 @@
     renderProfile(normalized.profile);
     const featuredId = renderFeatured(normalized);
     renderSections(normalized, featuredId);
+    return normalized;
+  }
+
+  let liveStatusTimer = 0;
+  let liveStatusExpiryTimer = 0;
+  let lastLiveSnapshot = null;
+
+  function hideLiveIndicator() {
+    window.clearTimeout(liveStatusExpiryTimer);
+    liveStatusExpiryTimer = 0;
+    elements.liveIndicator.hidden = true;
+    elements.liveIndicator.removeAttribute("aria-label");
+    elements.liveIndicator.removeAttribute("title");
+  }
+
+  function renderLiveStatus(raw) {
+    const source = raw && typeof raw === "object" && !Array.isArray(raw) ? raw : {};
+    const expiresAt = Date.parse(source.expiresAt);
+    const now = Date.now();
+    const platformsSource =
+      source.platforms &&
+      typeof source.platforms === "object" &&
+      !Array.isArray(source.platforms)
+        ? source.platforms
+        : {};
+    const livePlatforms = [...LIVE_PLATFORM_LABELS]
+      .filter(([id]) => platformsSource[id] === true)
+      .map(([, label]) => label);
+    const isFresh =
+      source.online === true &&
+      Number.isFinite(expiresAt) &&
+      expiresAt > now &&
+      expiresAt <= now + MAX_LIVE_TTL_MS;
+
+    if (!isFresh || !livePlatforms.length) {
+      hideLiveIndicator();
+      return;
+    }
+
+    const platformText = livePlatforms.join(", ");
+    const accessibleText = `GilraenNR está en directo en ${platformText}`;
+    elements.liveIndicator.setAttribute("aria-label", accessibleText);
+    elements.liveIndicator.title = accessibleText;
+    elements.liveIndicator.hidden = false;
+    window.clearTimeout(liveStatusExpiryTimer);
+    liveStatusExpiryTimer = window.setTimeout(
+      hideLiveIndicator,
+      Math.max(0, expiresAt - now)
+    );
+  }
+
+  async function refreshLiveStatus(config) {
+    try {
+      lastLiveSnapshot = await fetchJson(config.url.href);
+    } catch {
+      // A transient status failure must never create a false live signal.
+    }
+
+    if (lastLiveSnapshot) renderLiveStatus(lastLiveSnapshot);
+    else hideLiveIndicator();
+  }
+
+  function startLiveStatus(config) {
+    window.clearInterval(liveStatusTimer);
+    liveStatusTimer = 0;
+    lastLiveSnapshot = null;
+    hideLiveIndicator();
+
+    if (!config.enabled || !config.url) return;
+    void refreshLiveStatus(config);
+    liveStatusTimer = window.setInterval(
+      () => void refreshLiveStatus(config),
+      config.pollMs
+    );
   }
 
   function renderUnavailable() {
@@ -533,7 +639,8 @@
 
     try {
       const remoteData = await fetchJson(REMOTE_CONTENT_URL);
-      render(remoteData);
+      const normalized = render(remoteData);
+      startLiveStatus(normalized.liveStatus);
       reportStatus("Contenido cargado desde GitHub Raw.");
       return;
     } catch {
@@ -542,9 +649,11 @@
 
     try {
       const fallbackData = await fetchJson(LOCAL_FALLBACK_URL);
-      render(fallbackData);
+      const normalized = render(fallbackData);
+      startLiveStatus(normalized.liveStatus);
       reportStatus("GitHub Raw no está disponible. Se muestra el fallback local.");
     } catch {
+      startLiveStatus({ enabled: false, url: null });
       renderUnavailable();
       reportStatus("No se pudieron cargar las fuentes JSON.");
     }

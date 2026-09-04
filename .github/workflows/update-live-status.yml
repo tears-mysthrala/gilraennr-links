@@ -1,0 +1,257 @@
+name: Update live status
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: live-status
+  cancel-in-progress: true
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - name: Check out channel configuration
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.13"
+
+      - name: Install the pinned stream probe
+        run: python -m pip install --disable-pip-version-check --quiet "yt-dlp==2026.8.19"
+
+      - name: Probe configured channels
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          channel_url() {
+            jq -r --arg id "$1" \
+              'first(.links[]? | select(.id == $id and .enabled != false) | .url) // ""' \
+              content/links.json
+          }
+
+          probe() {
+            local url="$1"
+            local output
+            local exit_code
+
+            if [[ -z "$url" ]]; then
+              printf 'offline'
+              return
+            fi
+
+            set +e
+            output="$(timeout 60s yt-dlp \
+              --ignore-config \
+              --no-warnings \
+              --simulate \
+              --match-filter "is_live" \
+              --socket-timeout 15 \
+              --retries 1 \
+              "$url" 2>&1)"
+            exit_code=$?
+            set -e
+
+            if grep -Eiq \
+              'not currently live|channel is offline|no live streams|does not pass filter.*is_live' \
+              <<<"$output"; then
+              printf 'offline'
+            elif [[ $exit_code -eq 0 ]]; then
+              printf 'online'
+            else
+              printf 'unknown'
+            fi
+          }
+
+          twitch_url="$(channel_url twitch)"
+          youtube_url="$(channel_url youtube)"
+          kick_url="$(channel_url kick)"
+          youtube_probe_url=""
+          if [[ -n "$youtube_url" ]]; then
+            youtube_probe_url="${youtube_url%/}/live"
+          fi
+
+          twitch="$(probe "$twitch_url")"
+          youtube="$(probe "$youtube_probe_url")"
+          kick="$(probe "$kick_url")"
+
+          mkdir -p live-status
+          jq -n \
+            --arg checkedAt "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" \
+            --arg twitch "$twitch" \
+            --arg youtube "$youtube" \
+            --arg kick "$kick" \
+            '{
+              version: 1,
+              checkedAt: $checkedAt,
+              probes: {
+                twitch: $twitch,
+                youtube: $youtube,
+                kick: $kick
+              }
+            }' > live-status/probes.json
+
+      - name: Pass the probe result to the publisher
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: live-status
+          path: live-status/probes.json
+          if-no-files-found: error
+          retention-days: 1
+
+  publish:
+    needs: probe
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    permissions:
+      contents: write
+    steps:
+      - name: Download the isolated probe result
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: live-status
+          path: live-status
+
+      - name: Publish a bounded status snapshot
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          repository="$GITHUB_REPOSITORY"
+          branch="status"
+
+          if ! gh api "repos/$repository/git/ref/heads/$branch" >/dev/null 2>&1; then
+            main_sha="$(gh api "repos/$repository/git/ref/heads/main" --jq '.object.sha')"
+            gh api -X POST "repos/$repository/git/refs" \
+              -f ref="refs/heads/$branch" \
+              -f sha="$main_sha" >/dev/null
+          fi
+
+          metadata="$(gh api \
+            "repos/$repository/contents/content/status.json?ref=$branch" 2>/dev/null || true)"
+          current_sha=""
+          current='{"online":false,"expiresAt":null,"platforms":{"twitch":false,"youtube":false,"kick":false}}'
+
+          if [[ -n "$metadata" ]]; then
+            current_sha="$(jq -r '.sha' <<<"$metadata")"
+            current="$(jq -r '.content' <<<"$metadata" | tr -d '\n' | base64 --decode)"
+          fi
+
+          resolve_probe() {
+            case "$1" in
+              online) printf 'true' ;;
+              offline) printf 'false' ;;
+              *) printf '%s' "$2" ;;
+            esac
+          }
+
+          twitch_probe="$(jq -r '.probes.twitch' live-status/probes.json)"
+          youtube_probe="$(jq -r '.probes.youtube' live-status/probes.json)"
+          kick_probe="$(jq -r '.probes.kick' live-status/probes.json)"
+
+          twitch="$(resolve_probe "$twitch_probe" "$(jq -r '.platforms.twitch // false' <<<"$current")")"
+          youtube="$(resolve_probe "$youtube_probe" "$(jq -r '.platforms.youtube // false' <<<"$current")")"
+          kick="$(resolve_probe "$kick_probe" "$(jq -r '.platforms.kick // false' <<<"$current")")"
+
+          confirmed_online=false
+          if [[ "$twitch_probe" == online || "$youtube_probe" == online || "$kick_probe" == online ]]; then
+            confirmed_online=true
+          fi
+
+          # A confirmed live result may extend the aggregate snapshot, so do
+          # not let it extend an unrelated platform's carried-forward state.
+          if [[ "$confirmed_online" == true ]]; then
+            [[ "$twitch_probe" == unknown ]] && twitch=false
+            [[ "$youtube_probe" == unknown ]] && youtube=false
+            [[ "$kick_probe" == unknown ]] && kick=false
+          fi
+
+          online=false
+          if [[ "$twitch" == true || "$youtube" == true || "$kick" == true ]]; then
+            online=true
+          fi
+
+          same_state=false
+          if jq -e \
+            --argjson online "$online" \
+            --argjson twitch "$twitch" \
+            --argjson youtube "$youtube" \
+            --argjson kick "$kick" \
+            '.online == $online and
+             .platforms.twitch == $twitch and
+             .platforms.youtube == $youtube and
+             .platforms.kick == $kick' \
+            <<<"$current" >/dev/null; then
+            same_state=true
+          fi
+
+          refresh_due=false
+          if [[ "$online" == true && "$confirmed_online" == true ]]; then
+            current_expiry="$(jq -r '.expiresAt // empty' <<<"$current")"
+            expiry_epoch="$(date -u -d "$current_expiry" +%s 2>/dev/null || printf '0')"
+            refresh_threshold="$(date -u -d '+15 minutes' +%s)"
+            if (( expiry_epoch <= refresh_threshold )); then
+              refresh_due=true
+            fi
+          fi
+
+          if [[ "$same_state" == true && "$refresh_due" == false ]]; then
+            echo "Status is unchanged; no commit needed." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          checked_at="$(jq -r '.checkedAt' live-status/probes.json)"
+          expires_at=""
+          if [[ "$online" == true ]]; then
+            if [[ "$confirmed_online" == true ]]; then
+              expires_at="$(date -u -d '+45 minutes' +'%Y-%m-%dT%H:%M:%SZ')"
+            else
+              expires_at="$(jq -r '.expiresAt // empty' <<<"$current")"
+            fi
+          fi
+
+          jq -n \
+            --arg checkedAt "$checked_at" \
+            --arg expiresAt "$expires_at" \
+            --argjson online "$online" \
+            --argjson twitch "$twitch" \
+            --argjson youtube "$youtube" \
+            --argjson kick "$kick" \
+            '{
+              version: 1,
+              checkedAt: $checkedAt,
+              expiresAt: (if $expiresAt == "" then null else $expiresAt end),
+              online: $online,
+              platforms: {
+                twitch: $twitch,
+                youtube: $youtube,
+                kick: $kick
+              }
+            }' > live-status/status.json
+
+          encoded="$(base64 -w 0 live-status/status.json)"
+          api_args=(
+            -X PUT
+            "repos/$repository/contents/content/status.json"
+            -f "message=Update live status [skip ci]"
+            -f "branch=$branch"
+            -f "content=$encoded"
+          )
+          if [[ -n "$current_sha" ]]; then
+            api_args+=(-f "sha=$current_sha")
+          fi
+
+          gh api "${api_args[@]}" --silent
+          echo "Published live status: online=$online" >> "$GITHUB_STEP_SUMMARY"

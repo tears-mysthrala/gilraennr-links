@@ -9,6 +9,8 @@ Página estática de enlaces para GilraenNR. No usa framework, gestor de paquete
 ├── index.html                 # Estructura semántica y metadatos
 ├── 404.html                   # Error personalizado para Pages
 ├── _headers                   # CSP y cabeceras de seguridad de Cloudflare
+├── .github/workflows/
+│   └── update-live-status.yml # Comprobación periódica de Twitch, YouTube y Kick
 ├── robots.txt
 ├── site.webmanifest
 ├── assets/
@@ -18,6 +20,7 @@ Página estática de enlaces para GilraenNR. No usa framework, gestor de paquete
 ├── content/
 │   ├── links.json             # Contenido editable principal
 │   ├── fallback.json          # Copia local estable
+│   ├── status.json            # Estado inicial; la rama status contiene el vigente
 │   └── schema.json            # JSON Schema del formato admitido
 └── DESIGN.md
 ```
@@ -37,6 +40,8 @@ La fuente editorial es [`content/links.json`](content/links.json). Cada enlace a
 - `action`: texto opcional del CTA cuando el enlace es el destacado.
 
 `featuredLinkId` tiene preferencia sobre `featured`. Si no existe, se usa el primer enlace con `featured: true`. Si no hay ninguno, el panel principal no se renderiza.
+
+`liveStatus` configura el indicador de directo. `url` debe apuntar a un JSON de `raw.githubusercontent.com`; `pollSeconds` se limita en el navegador a un valor entre 30 y 300 segundos. Usa `enabled: false` para desactivarlo sin cambiar el HTML.
 
 Las secciones se definen en `sections`. Su `id` debe coincidir con el `category` de los enlaces. Una sección vacía o desactivada no se muestra. Los campos desconocidos se ignoran para permitir ampliar el JSON sin romper versiones anteriores del frontend.
 
@@ -81,6 +86,22 @@ También actualiza estas referencias si cambia el repositorio o el dominio:
 Los metadatos SEO y Open Graph de `index.html` son una excepción deliberada al contenido remoto. Los robots de buscadores y redes sociales no suelen ejecutar el JavaScript que carga GitHub Raw, por lo que el nombre de marca, el resumen estable y la imagen social deben existir en el HTML desplegado. Los destinos, etiquetas, descripciones operativas, avatar y orden de las tarjetas siguen viviendo exclusivamente en JSON. Cambiar esos metadatos de despliegue sí requiere publicar de nuevo.
 
 Después de la primera publicación, conserva `fallback.json` como una copia conocida y estable. No hace falta sincronizarla en cada ajuste editorial; conviene actualizarla cuando se despliegue una nueva versión del sitio.
+
+## Indicador de directo
+
+El workflow `update-live-status.yml` se ejecuta cada cinco minutos y también admite ejecución manual. Lee las URLs habilitadas de Twitch, YouTube y Kick desde `content/links.json`, las comprueba con una versión fijada de `yt-dlp` y publica `content/status.json` en la rama `status`.
+
+El trabajo de comprobación solo tiene permiso de lectura. Un segundo trabajo, aislado del proceso que consulta las plataformas, recibe el resultado y tiene el permiso de escritura necesario para actualizar la rama `status`. No hacen falta claves de Twitch, YouTube ni Kick y ninguna credencial llega al navegador.
+
+La página consulta el estado cada 90 segundos y solo muestra `✓ En directo` cuando:
+
+- al menos una plataforma está confirmada en directo;
+- el snapshot tiene una fecha `expiresAt` válida;
+- esa fecha no ha vencido ni supera dos horas desde el reloj del visitante.
+
+Los snapshots positivos caducan a los 45 minutos y se renuevan cuando quedan menos de 15. Los fallos de red o del extractor producen un estado desconocido: no crean un falso positivo y un indicador antiguo termina desapareciendo. Los commits de estado viven en una rama separada, así que no ensucian `main` ni reconstruyen el sitio publicado desde esa rama. En Cloudflare Pages, conserva además la exclusión `content/*` documentada más abajo.
+
+GitHub puede retrasar los workflows programados. El indicador es deliberadamente informativo y no una garantía en tiempo real. Para lanzar una comprobación inmediata usa **Actions → Update live status → Run workflow**.
 
 ## GitHub Pages temporal
 

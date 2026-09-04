@@ -252,6 +252,35 @@ svg {
   min-height: 1.3em;
 }
 
+.profile__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  align-items: center;
+  justify-content: center;
+  min-height: 1.6rem;
+}
+
+.profile__live {
+  display: inline-flex;
+  gap: 0.3rem;
+  align-items: center;
+  min-height: 1.55rem;
+  padding: 0.2rem 0.55rem 0.2rem 0.4rem;
+  border: 1px solid rgba(168, 230, 207, 0.38);
+  border-radius: 999px;
+  color: var(--success);
+  background: rgba(168, 230, 207, 0.1);
+  font-size: 0.7rem;
+  font-weight: 760;
+  line-height: 1;
+}
+
+.profile__live svg {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+
 .profile h1 {
   margin: 0.15rem 0 0.6rem;
   font-family: var(--font-display);
@@ -695,6 +724,10 @@ html.is-ready .site-footer {
   .profile {
     grid-template-columns: auto 1fr;
     text-align: left;
+  }
+
+  .profile__meta {
+    justify-content: flex-start;
   }
 
   .avatar-wrap,

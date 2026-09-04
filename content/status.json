@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "checkedAt": null,
+  "expiresAt": null,
+  "online": false,
+  "platforms": {
+    "twitch": false,
+    "youtube": false,
+    "kick": false
+  }
+}

@@ -29,6 +29,25 @@
         "bio": { "type": "string", "maxLength": 280 }
       }
     },
+    "liveStatus": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "enabled": { "type": "boolean", "default": true },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://raw\\.githubusercontent\\.com/",
+          "maxLength": 2048
+        },
+        "pollSeconds": {
+          "type": "number",
+          "minimum": 30,
+          "maximum": 300,
+          "default": 90
+        }
+      }
+    },
     "featuredLinkId": {
       "type": "string",
       "pattern": "^[a-z0-9][a-z0-9_-]*$"
