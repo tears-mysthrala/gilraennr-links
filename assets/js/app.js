@@ -293,12 +293,14 @@
 
     if (!selected) {
       elements.featuredCard.hidden = true;
+      delete elements.featuredCard.dataset.icon;
       elements.featuredCard.classList.remove("is-loading");
       elements.featuredCard.setAttribute("aria-busy", "false");
       return null;
     }
 
     elements.featuredLabel.textContent = selected.label || "Destacado ahora";
+    elements.featuredCard.dataset.icon = selected.icon;
     elements.featuredTitle.textContent = selected.title;
     elements.featuredDescription.textContent =
       selected.description || `Visita ${selected.title}.`;
@@ -327,6 +329,7 @@
   function createLinkCard(link) {
     const card = document.createElement("a");
     card.className = "link-card";
+    card.dataset.icon = link.icon;
     const isExternal = configureExternalLink(card, link.url);
 
     const iconWrap = document.createElement("span");

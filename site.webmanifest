@@ -4,8 +4,8 @@
   "description": "Directos, vídeos, redes y formas de apoyar a GilraenNR.",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#180f20",
-  "theme_color": "#180f20",
+  "background_color": "#160d1d",
+  "theme_color": "#160d1d",
   "icons": [
     {
       "src": "assets/images/icon-192.png",
