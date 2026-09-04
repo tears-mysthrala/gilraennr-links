@@ -14,8 +14,12 @@
   const MAX_LINKS = 100;
   const MAX_SECTIONS = 30;
   const MAX_LIVE_TTL_MS = 2 * 60 * 60 * 1000;
+  const DIRECT_STATUS_TTL_MS = 7 * 60 * 1000;
+  const MAX_LIVE_PROBE_BYTES = 256;
   const GIT_COMMIT_SHA_PATTERN = /^[0-9a-f]{40}$/i;
   const GITHUB_PATH_COMPONENT_PATTERN = /^[a-z0-9_.-]+$/i;
+  const TWITCH_UPTIME_PATTERN =
+    /^\d+ (?:years?|months?|weeks?|days?|hours?|minutes?|seconds?)$/i;
   const DEFAULT_AFFILIATE_DISCLOSURE =
     "Este es un enlace de afiliación. Si compras a través de él, GilraenNR puede recibir una comisión sin coste adicional para ti.";
 
@@ -132,6 +136,30 @@
     return url?.hostname === "raw.githubusercontent.com" ? url : null;
   }
 
+  function safeTwitchProbeUrl(value) {
+    const url = safeUrl(value);
+    if (
+      !url ||
+      url.origin !== "https://decapi.me" ||
+      url.username ||
+      url.password ||
+      url.hash ||
+      !/^\/twitch\/uptime\/[a-z0-9_]{1,25}$/i.test(url.pathname)
+    ) {
+      return null;
+    }
+
+    const parameters = [...url.searchParams.keys()];
+    const allowedParameters =
+      parameters.length === 2 &&
+      parameters.every((name) => name === "precision" || name === "offline_msg");
+    return allowedParameters &&
+      url.searchParams.get("precision") === "1" &&
+      url.searchParams.get("offline_msg") === "offline"
+      ? url
+      : null;
+  }
+
   function boundedNumber(value, fallback, minimum, maximum) {
     const number = Number(value);
     if (!Number.isFinite(number)) return fallback;
@@ -162,6 +190,7 @@
         ? source.liveStatus
         : {};
     const liveStatusUrl = safeStatusUrl(rawLiveStatus.url);
+    const liveProbeUrl = safeTwitchProbeUrl(rawLiveStatus.probeUrl);
 
     const rawSections = Array.isArray(source.sections)
       ? source.sections.slice(0, MAX_SECTION_ENTRIES)
@@ -234,8 +263,11 @@
       links,
       sections,
       liveStatus: {
-        enabled: rawLiveStatus.enabled !== false && Boolean(liveStatusUrl),
+        enabled:
+          rawLiveStatus.enabled !== false &&
+          Boolean(liveStatusUrl || liveProbeUrl),
         url: liveStatusUrl,
+        probeUrl: liveProbeUrl,
         pollMs: Math.round(
           boundedNumber(rawLiveStatus.pollSeconds, 120, 30, 300) * 1000
         )
@@ -600,9 +632,64 @@
     return fetchJson(rawUrl.href);
   }
 
-  async function refreshLiveStatus(config) {
+  async function fetchTwitchLiveStatus(probeUrl) {
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
     try {
-      lastLiveSnapshot = await fetchFreshLiveStatus(config.url);
+      const response = await fetch(probeUrl.href, {
+        cache: "no-store",
+        credentials: "omit",
+        headers: { Accept: "text/plain" },
+        referrerPolicy: "no-referrer",
+        signal: controller.signal
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+      const declaredSize = Number(response.headers.get("content-length"));
+      if (Number.isFinite(declaredSize) && declaredSize > MAX_LIVE_PROBE_BYTES) {
+        throw new RangeError("La respuesta de estado es demasiado grande.");
+      }
+
+      const result = (await response.text()).trim();
+      if (new TextEncoder().encode(result).byteLength > MAX_LIVE_PROBE_BYTES) {
+        throw new RangeError("La respuesta de estado es demasiado grande.");
+      }
+
+      const online =
+        result === "offline"
+          ? false
+          : TWITCH_UPTIME_PATTERN.test(result)
+            ? true
+            : null;
+      if (online === null) throw new TypeError("Respuesta de estado no reconocida.");
+
+      const now = Date.now();
+      return {
+        version: 1,
+        checkedAt: new Date(now).toISOString(),
+        expiresAt: new Date(now + DIRECT_STATUS_TTL_MS).toISOString(),
+        online,
+        platforms: { twitch: online }
+      };
+    } finally {
+      window.clearTimeout(timer);
+    }
+  }
+
+  async function refreshLiveStatus(config) {
+    if (config.probeUrl) {
+      try {
+        lastLiveSnapshot = await fetchTwitchLiveStatus(config.probeUrl);
+        renderLiveStatus(lastLiveSnapshot);
+        return;
+      } catch {
+        // The repository snapshot remains available when the direct probe fails.
+      }
+    }
+
+    try {
+      if (config.url) lastLiveSnapshot = await fetchFreshLiveStatus(config.url);
     } catch {
       // A transient status failure must never create a false live signal.
     }
@@ -617,7 +704,7 @@
     lastLiveSnapshot = null;
     hideLiveIndicator();
 
-    if (!config.enabled || !config.url) return;
+    if (!config.enabled || (!config.url && !config.probeUrl)) return;
     void refreshLiveStatus(config);
     liveStatusTimer = window.setInterval(
       () => void refreshLiveStatus(config),

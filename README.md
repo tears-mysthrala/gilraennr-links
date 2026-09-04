@@ -42,7 +42,7 @@ La fuente editorial es [`content/links.json`](content/links.json). Cada enlace a
 
 `featuredLinkId` tiene preferencia sobre `featured`. Si no existe, se usa el primer enlace con `featured: true`. Si no hay ninguno, el panel principal no se renderiza.
 
-`liveStatus` configura el indicador de directo. `url` debe apuntar a un JSON de `raw.githubusercontent.com`; `pollSeconds` se limita en el navegador a un valor entre 30 y 300 segundos. El valor recomendado es 120 segundos para mantenerse dentro del límite anónimo de la API de GitHub. Usa `enabled: false` para desactivarlo sin cambiar el HTML.
+`liveStatus` configura el indicador de directo. `probeUrl` admite únicamente el endpoint de uptime de Twitch de DecAPI con los parámetros exactos del ejemplo; `url` debe apuntar al snapshot alternativo en `raw.githubusercontent.com`. `pollSeconds` se limita en el navegador a un valor entre 30 y 300 segundos. El valor recomendado es 120 segundos. Usa `enabled: false` para desactivarlo sin cambiar el HTML.
 
 Las secciones se definen en `sections`. Su `id` debe coincidir con el `category` de los enlaces. Una sección vacía o desactivada no se muestra. Los campos desconocidos se ignoran para permitir ampliar el JSON sin romper versiones anteriores del frontend.
 
@@ -90,7 +90,9 @@ Después de la primera publicación, conserva `fallback.json` como una copia con
 
 ## Indicador de directo
 
-El workflow `update-live-status.yml` se ejecuta diez veces por hora, en minutos desplazados de los intervalos más congestionados de GitHub Actions, y también admite ejecución manual. Lee la URL habilitada de Twitch desde `content/links.json`, la comprueba con una versión fijada de `yt-dlp` y publica `content/status.json` en la rama `status`. Twitch es la única fuente de verdad del indicador: el estado de YouTube o Kick no puede encenderlo.
+El navegador consulta primero el endpoint `probeUrl` de DecAPI, que devuelve el uptime de Twitch o el texto `offline`. La URL, el tamaño y el formato de esa respuesta se validan antes de usarla; el texto nunca se inserta en el DOM. DecAPI cachea esta consulta durante cinco minutos, por lo que el indicador puede tardar ese intervalo en reflejar un cambio real. La petición se hace sin credenciales ni cabecera Referer y no carga scripts externos.
+
+Como respaldo, el workflow `update-live-status.yml` está programado diez veces por hora, en minutos desplazados de los intervalos más congestionados de GitHub Actions, y también admite ejecución manual. Lee la URL habilitada de Twitch desde `content/links.json`, la comprueba con una versión fijada de `yt-dlp` y publica `content/status.json` en la rama `status`. Twitch es la única fuente de verdad del indicador: el estado de YouTube o Kick no puede encenderlo.
 
 El trabajo de comprobación solo tiene permiso de lectura. Un segundo trabajo, aislado del proceso que consulta Twitch, recibe el resultado y tiene el permiso de escritura necesario para actualizar la rama `status`. No hace falta una clave de Twitch y ninguna credencial llega al navegador.
 
@@ -102,7 +104,7 @@ La página consulta el estado cada 120 segundos. Dentro de la tarjeta principal 
 - el snapshot tiene una fecha `expiresAt` válida;
 - esa fecha no ha vencido ni supera dos horas desde el reloj del visitante.
 
-Los snapshots en directo caducan a los 45 minutos y los offline, a los 30. Ambos se renuevan cuando quedan menos de 10 minutos. Los fallos de red o del extractor producen un estado desconocido: no cambian el último estado confirmado y el indicador termina desapareciendo al caducar. Los commits de estado viven en una rama separada, así que no ensucian `main` ni reconstruyen el sitio publicado desde esa rama. En Cloudflare Pages, conserva además la exclusión `content/*` documentada más abajo.
+Una lectura directa caduca localmente a los siete minutos. En el respaldo de GitHub, los snapshots en directo caducan a los 45 minutos y los offline, a los 30; ambos se renuevan cuando quedan menos de 10 minutos. Los fallos de red o del extractor producen un estado desconocido: no cambian el último estado confirmado y el indicador termina desapareciendo al caducar. Los commits de estado viven en una rama separada, así que no ensucian `main` ni reconstruyen el sitio publicado desde esa rama. En Cloudflare Pages, conserva además la exclusión `content/*` documentada más abajo.
 
 GitHub puede retrasar los workflows programados. El indicador es deliberadamente informativo y no una garantía en tiempo real. Para lanzar una comprobación inmediata usa **Actions → Update live status → Run workflow**.
 

@@ -9,6 +9,7 @@
   "liveStatus": {
     "enabled": true,
     "url": "https://raw.githubusercontent.com/tears-mysthrala/gilraennr-links/status/content/status.json",
+    "probeUrl": "https://decapi.me/twitch/uptime/gilraennr?precision=1&offline_msg=offline",
     "pollSeconds": 120
   },
   "featuredLinkId": "twitch",

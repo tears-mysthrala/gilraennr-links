@@ -40,11 +40,17 @@
           "pattern": "^https://raw\\.githubusercontent\\.com/",
           "maxLength": 2048
         },
+        "probeUrl": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://decapi\\.me/twitch/uptime/[A-Za-z0-9_]{1,25}\\?precision=1&offline_msg=offline$",
+          "maxLength": 2048
+        },
         "pollSeconds": {
           "type": "number",
           "minimum": 30,
           "maximum": 300,
-          "default": 90
+          "default": 120
         }
       }
     },
