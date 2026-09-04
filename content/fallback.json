@@ -27,21 +27,21 @@
       "title": "Apoya el canal",
       "description": "Una forma directa de ayudar a que el canal continúe.",
       "variant": "support",
-      "order": 20
+      "order": 30
     },
     {
       "id": "social",
       "title": "Redes",
       "description": "Actualizaciones y contenido fuera de los directos.",
       "variant": "social",
-      "order": 40
+      "order": 20
     },
     {
       "id": "contact",
       "title": "Contacto profesional",
       "description": "Colaboraciones, prensa y propuestas.",
       "variant": "contact",
-      "order": 30
+      "order": 40
     },
     {
       "id": "partners",
