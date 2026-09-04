@@ -324,10 +324,9 @@ svg {
   position: relative;
   display: grid;
   align-content: center;
-  gap: 1.35rem;
-  min-height: 20rem;
+  gap: clamp(1rem, 2.5vw, 1.35rem);
   overflow: hidden;
-  padding: 1.5rem;
+  padding: clamp(1.5rem, 4vw, 2rem);
   border: 1px solid rgba(241, 184, 255, 0.38);
   border-radius: var(--radius-lg);
   background: linear-gradient(145deg, rgba(59, 34, 70, 0.97), rgba(31, 17, 39, 0.98));
@@ -928,11 +927,6 @@ html.is-ready .site-footer {
   .avatar-fallback {
     width: 8rem;
     height: 8rem;
-  }
-
-  .featured {
-    min-height: 24rem;
-    padding: 2rem;
   }
 
   .sections {
