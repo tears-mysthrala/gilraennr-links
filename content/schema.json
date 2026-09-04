@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/tears-mysthrala/gilraennr-links/main/content/schema.json",
+  "title": "Contenido del link hub de GilraenNR",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["profile", "links"],
+  "properties": {
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "profile": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["name"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "handle": { "type": "string", "maxLength": 80 },
+        "image": {
+          "type": "string",
+          "maxLength": 2048,
+          "anyOf": [
+            { "pattern": "^assets/" },
+            { "pattern": "^/assets/" },
+            { "pattern": "^https://raw\\.githubusercontent\\.com/" }
+          ]
+        },
+        "bio": { "type": "string", "maxLength": 280 }
+      }
+    },
+    "featuredLinkId": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_-]*$"
+    },
+    "disclosure": {
+      "type": "string",
+      "maxLength": 400
+    },
+    "sections": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/section" }
+    },
+    "links": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/link" }
+    }
+  },
+  "$defs": {
+    "section": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["id", "title"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9_-]*$"
+        },
+        "title": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "description": { "type": "string", "maxLength": 220 },
+        "variant": {
+          "enum": ["default", "streaming", "support", "social", "partners"]
+        },
+        "order": { "type": "number" },
+        "priority": { "type": "number" },
+        "enabled": { "type": "boolean", "default": true },
+        "disclosure": { "type": "string", "maxLength": 400 }
+      }
+    },
+    "link": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["id", "title", "url", "category"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9_-]*$"
+        },
+        "title": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://",
+          "maxLength": 2048
+        },
+        "description": { "type": "string", "maxLength": 240 },
+        "icon": {
+          "enum": ["twitch", "youtube", "kick", "x", "instagram", "patreon", "gamepad", "store", "link"]
+        },
+        "category": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9_-]*$"
+        },
+        "enabled": { "type": "boolean", "default": true },
+        "order": { "type": "number" },
+        "priority": { "type": "number" },
+        "featured": { "type": "boolean", "default": false },
+        "label": { "type": "string", "maxLength": 32 },
+        "action": { "type": "string", "maxLength": 60 }
+      }
+    }
+  }
+}

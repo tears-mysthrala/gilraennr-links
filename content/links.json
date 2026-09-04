@@ -1,0 +1,154 @@
+{
+  "$schema": "./schema.json",
+  "version": 1,
+  "profile": {
+    "name": "GilraenNR",
+    "handle": "@gilraennr",
+    "image": "assets/images/avatar.webp",
+    "bio": "Directos y vídeos de juegos, simuladores y aventuras con chat."
+  },
+  "featuredLinkId": "twitch",
+  "disclosure": "Algunos enlaces de esta sección son de afiliación. Si compras a través de ellos, GilraenNR puede recibir una comisión sin coste adicional para ti.",
+  "sections": [
+    {
+      "id": "streaming",
+      "title": "Directos y vídeos",
+      "description": "Elige dónde ver el contenido.",
+      "variant": "streaming",
+      "order": 10,
+      "enabled": true
+    },
+    {
+      "id": "support",
+      "title": "Apoya el canal",
+      "description": "Una forma directa de ayudar a que el canal continúe.",
+      "variant": "support",
+      "order": 20,
+      "enabled": true
+    },
+    {
+      "id": "social",
+      "title": "Redes",
+      "description": "Actualizaciones y contenido fuera de los directos.",
+      "variant": "social",
+      "order": 30,
+      "enabled": true
+    },
+    {
+      "id": "partners",
+      "title": "Partners y ofertas",
+      "description": "Tiendas y servicios vinculados al canal.",
+      "variant": "partners",
+      "order": 40,
+      "enabled": true
+    }
+  ],
+  "links": [
+    {
+      "id": "twitch",
+      "title": "Twitch",
+      "url": "https://www.twitch.tv/gilraennr",
+      "description": "Directos y comunidad en el canal principal.",
+      "icon": "twitch",
+      "category": "streaming",
+      "enabled": true,
+      "order": 10,
+      "featured": true,
+      "label": "Canal principal",
+      "action": "Ver en Twitch"
+    },
+    {
+      "id": "youtube",
+      "title": "YouTube",
+      "url": "https://www.youtube.com/@GilraenNR",
+      "description": "Vídeos, partidas y directos completos.",
+      "icon": "youtube",
+      "category": "streaming",
+      "enabled": true,
+      "order": 20,
+      "featured": false,
+      "label": "Vídeos"
+    },
+    {
+      "id": "kick",
+      "title": "Kick",
+      "url": "https://kick.com/gilraennr",
+      "description": "Emisiones alternativas y chat.",
+      "icon": "kick",
+      "category": "streaming",
+      "enabled": true,
+      "order": 30,
+      "featured": false
+    },
+    {
+      "id": "patreon",
+      "title": "Patreon",
+      "url": "https://www.patreon.com/c/GilraenNR",
+      "description": "Apoya directamente el trabajo de GilraenNR.",
+      "icon": "patreon",
+      "category": "support",
+      "enabled": true,
+      "order": 10,
+      "featured": false,
+      "label": "Apoyo"
+    },
+    {
+      "id": "x",
+      "title": "X",
+      "url": "https://x.com/GilraenNR",
+      "description": "Noticias y conversaciones del canal.",
+      "icon": "x",
+      "category": "social",
+      "enabled": true,
+      "order": 10,
+      "featured": false
+    },
+    {
+      "id": "instagram",
+      "title": "Instagram",
+      "url": "https://www.instagram.com/gilraennr/",
+      "description": "Fotos, historias y novedades.",
+      "icon": "instagram",
+      "category": "social",
+      "enabled": true,
+      "order": 20,
+      "featured": false
+    },
+    {
+      "id": "instant-gaming",
+      "title": "Instant Gaming",
+      "url": "https://www.instant-gaming.com/?igr=GilraenNR",
+      "description": "Juegos para PC y consola.",
+      "icon": "gamepad",
+      "category": "partners",
+      "enabled": true,
+      "order": 10,
+      "featured": false,
+      "label": "Afiliado"
+    },
+    {
+      "id": "eneba",
+      "title": "Eneba",
+      "url": "https://www.eneba.com/?af_id=GilraenNR01&utm_medium=infl&utm_source=GilraenNR01",
+      "description": "Juegos, tarjetas y contenido digital.",
+      "icon": "store",
+      "category": "partners",
+      "enabled": true,
+      "order": 20,
+      "featured": false,
+      "label": "Afiliado"
+    },
+    {
+      "id": "humble-bundle",
+      "title": "Humble Bundle",
+      "url": "https://humblebundleinc.sjv.io/c/7538194/2059850/25796",
+      "description": "Bundles, juegos y Humble Choice.",
+      "icon": "gamepad",
+      "category": "partners",
+      "enabled": true,
+      "order": 30,
+      "featured": false,
+      "label": "Afiliado"
+    }
+  ]
+}
