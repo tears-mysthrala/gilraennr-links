@@ -156,7 +156,9 @@ svg {
 }
 
 .wordmark__mark {
-  width: 2.2rem;
+  width: 2rem;
+  height: 2rem;
+  flex: 0 0 auto;
   color: var(--orchid-bright);
 }
 
@@ -219,19 +221,6 @@ svg {
   inset: 0;
   border: 1px solid var(--line-strong);
   border-radius: 50%;
-}
-
-.avatar-orbit::before {
-  position: absolute;
-  top: 0.15rem;
-  left: 50%;
-  width: 0.6rem;
-  height: 0.6rem;
-  border: 2px solid var(--ink);
-  border-radius: 50%;
-  background: var(--ember);
-  content: "";
-  transform: translateX(-50%);
 }
 
 .profile__copy {
@@ -847,10 +836,6 @@ html.is-ready .site-footer {
 }
 
 @media (forced-colors: active) {
-  .avatar-orbit::before {
-    border-color: Canvas;
-  }
-
   .featured__cta {
     border-color: ButtonText;
   }
