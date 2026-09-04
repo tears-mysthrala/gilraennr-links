@@ -10,6 +10,7 @@ Página estática de enlaces para GilraenNR. No usa framework, gestor de paquete
 ├── 404.html                   # Error personalizado para Pages
 ├── _headers                   # CSP y cabeceras de seguridad de Cloudflare
 ├── .github/workflows/
+│   ├── deploy-pages.yml       # Publicación temporal en GitHub Pages
 │   └── update-live-status.yml # Comprobación periódica de Twitch, YouTube y Kick
 ├── robots.txt
 ├── site.webmanifest
@@ -105,12 +106,11 @@ GitHub puede retrasar los workflows programados. El indicador es deliberadamente
 
 ## GitHub Pages temporal
 
-Mientras llega el dominio definitivo, el repositorio puede publicarse directamente desde la rama `main`:
+Mientras llega el dominio definitivo, `.github/workflows/deploy-pages.yml` publica el repositorio como un artefacto estático. La fuente de Pages debe estar configurada como **GitHub Actions**, no como el despliegue heredado desde una rama.
 
-1. Abre **Settings → Pages** en GitHub.
-2. En **Build and deployment**, elige **Deploy from a branch**.
-3. Selecciona `main` y la carpeta `/ (root)`.
-4. El sitio quedará disponible en `https://tears-mysthrala.github.io/gilraennr-links/`.
+El workflow usa las versiones vigentes de las acciones oficiales de Pages, fijadas por SHA para evitar que una etiqueta mutable cambie el código ejecutado sin revisión. Se activa con cambios de `main` y también admite ejecución manual. Los commits que solo modifican `content/**` no lo ejecutan: el navegador obtiene `links.json` desde GitHub Raw y el indicador de directo usa la rama `status`.
+
+El sitio queda disponible en `https://tears-mysthrala.github.io/gilraennr-links/`.
 
 La URL canónica y `og:url` apuntan temporalmente a GitHub Pages. Sustitúyelas por el dominio definitivo cuando se conecte Cloudflare Pages.
 
