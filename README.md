@@ -11,7 +11,7 @@ Página estática de enlaces para GilraenNR. No usa framework, gestor de paquete
 ├── _headers                   # CSP y cabeceras de seguridad de Cloudflare
 ├── .github/workflows/
 │   ├── deploy-pages.yml       # Publicación temporal en GitHub Pages
-│   └── update-live-status.yml # Comprobación periódica de Twitch, YouTube y Kick
+│   └── update-live-status.yml # Comprobación periódica del canal principal de Twitch
 ├── robots.txt
 ├── site.webmanifest
 ├── assets/
@@ -42,7 +42,7 @@ La fuente editorial es [`content/links.json`](content/links.json). Cada enlace a
 
 `featuredLinkId` tiene preferencia sobre `featured`. Si no existe, se usa el primer enlace con `featured: true`. Si no hay ninguno, el panel principal no se renderiza.
 
-`liveStatus` configura el indicador de directo. `url` debe apuntar a un JSON de `raw.githubusercontent.com`; `pollSeconds` se limita en el navegador a un valor entre 30 y 300 segundos. Usa `enabled: false` para desactivarlo sin cambiar el HTML.
+`liveStatus` configura el indicador de directo. `url` debe apuntar a un JSON de `raw.githubusercontent.com`; `pollSeconds` se limita en el navegador a un valor entre 30 y 300 segundos. El valor recomendado es 120 segundos para mantenerse dentro del límite anónimo de la API de GitHub. Usa `enabled: false` para desactivarlo sin cambiar el HTML.
 
 Las secciones se definen en `sections`. Su `id` debe coincidir con el `category` de los enlaces. Una sección vacía o desactivada no se muestra. Los campos desconocidos se ignoran para permitir ampliar el JSON sin romper versiones anteriores del frontend.
 
@@ -90,13 +90,15 @@ Después de la primera publicación, conserva `fallback.json` como una copia con
 
 ## Indicador de directo
 
-El workflow `update-live-status.yml` se ejecuta cada cinco minutos y también admite ejecución manual. Lee las URLs habilitadas de Twitch, YouTube y Kick desde `content/links.json`, las comprueba con una versión fijada de `yt-dlp` y publica `content/status.json` en la rama `status`.
+El workflow `update-live-status.yml` se ejecuta diez veces por hora, en minutos desplazados de los intervalos más congestionados de GitHub Actions, y también admite ejecución manual. Lee la URL habilitada de Twitch desde `content/links.json`, la comprueba con una versión fijada de `yt-dlp` y publica `content/status.json` en la rama `status`. Twitch es la única fuente de verdad del indicador: el estado de YouTube o Kick no puede encenderlo.
 
-El trabajo de comprobación solo tiene permiso de lectura. Un segundo trabajo, aislado del proceso que consulta las plataformas, recibe el resultado y tiene el permiso de escritura necesario para actualizar la rama `status`. No hacen falta claves de Twitch, YouTube ni Kick y ninguna credencial llega al navegador.
+El trabajo de comprobación solo tiene permiso de lectura. Un segundo trabajo, aislado del proceso que consulta Twitch, recibe el resultado y tiene el permiso de escritura necesario para actualizar la rama `status`. No hace falta una clave de Twitch y ninguna credencial llega al navegador.
 
-La página consulta el estado cada 90 segundos y solo muestra `✓ En directo` cuando:
+Para evitar que la caché de `raw.githubusercontent.com` retrase un cambio de estado, el navegador consulta primero el SHA actual de la rama `status` mediante la API pública de GitHub y descarga después el JSON asociado a ese commit inmutable. Si la API falla o limita las peticiones, vuelve automáticamente a la URL de GitHub Raw configurada.
 
-- al menos una plataforma está confirmada en directo;
+La página consulta el estado cada 120 segundos y solo muestra el distintivo rojo `En directo` dentro de la tarjeta principal de Twitch cuando:
+
+- Twitch está confirmado en directo;
 - el snapshot tiene una fecha `expiresAt` válida;
 - esa fecha no ha vencido ni supera dos horas desde el reloj del visitante.
 

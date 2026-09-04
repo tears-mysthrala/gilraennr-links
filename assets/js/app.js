@@ -14,6 +14,8 @@
   const MAX_LINKS = 100;
   const MAX_SECTIONS = 30;
   const MAX_LIVE_TTL_MS = 2 * 60 * 60 * 1000;
+  const GIT_COMMIT_SHA_PATTERN = /^[0-9a-f]{40}$/i;
+  const GITHUB_PATH_COMPONENT_PATTERN = /^[a-z0-9_.-]+$/i;
   const DEFAULT_AFFILIATE_DISCLOSURE =
     "Este es un enlace de afiliación. Si compras a través de él, GilraenNR puede recibir una comisión sin coste adicional para ti.";
 
@@ -24,17 +26,14 @@
     "x",
     "instagram",
     "patreon",
+    "gift",
     "gamepad",
     "store",
     "mail",
     "link"
   ]);
   const VARIANTS = new Set(["default", "streaming", "support", "contact", "social", "partners"]);
-  const LIVE_PLATFORM_LABELS = new Map([
-    ["twitch", "Twitch"],
-    ["youtube", "YouTube"],
-    ["kick", "Kick"]
-  ]);
+  const LIVE_PLATFORM_LABELS = new Map([["twitch", "Twitch"]]);
   const debugMode =
     new URLSearchParams(window.location.search).has("debug") ||
     ["localhost", "127.0.0.1"].includes(window.location.hostname);
@@ -49,6 +48,7 @@
     bio: document.querySelector("#profile-bio"),
     liveIndicator: document.querySelector("#live-indicator"),
     featuredCard: document.querySelector("#featured-card"),
+    featuredIconUse: document.querySelector("#featured-icon-use"),
     featuredLabel: document.querySelector("#featured-label"),
     featuredTitle: document.querySelector("#featured-title"),
     featuredDescription: document.querySelector("#featured-description"),
@@ -237,7 +237,7 @@
         enabled: rawLiveStatus.enabled !== false && Boolean(liveStatusUrl),
         url: liveStatusUrl,
         pollMs: Math.round(
-          boundedNumber(rawLiveStatus.pollSeconds, 90, 30, 300) * 1000
+          boundedNumber(rawLiveStatus.pollSeconds, 120, 30, 300) * 1000
         )
       },
       featuredLinkId: cleanId(source.featuredLinkId, ""),
@@ -325,6 +325,7 @@
 
     elements.featuredLabel.textContent = selected.label || "Destacado ahora";
     elements.featuredCard.dataset.icon = selected.icon;
+    elements.featuredIconUse.setAttribute("href", `#icon-${selected.icon}`);
     elements.featuredTitle.textContent = selected.title;
     elements.featuredDescription.textContent =
       selected.description || `Visita ${selected.title}.`;
@@ -530,7 +531,11 @@
       expiresAt > now &&
       expiresAt <= now + MAX_LIVE_TTL_MS;
 
-    if (!isFresh || !livePlatforms.length) {
+    if (
+      !isFresh ||
+      !livePlatforms.length ||
+      elements.featuredCard.dataset.icon !== "twitch"
+    ) {
       hideLiveIndicator();
       return;
     }
@@ -547,9 +552,54 @@
     );
   }
 
+  function githubStatusSource(rawUrl) {
+    if (!(rawUrl instanceof URL) || rawUrl.hostname !== "raw.githubusercontent.com") {
+      return null;
+    }
+
+    const parts = rawUrl.pathname.split("/").filter(Boolean);
+    if (parts.length < 5) return null;
+
+    const [owner, repository, branch, ...fileParts] = parts;
+    const safeComponents = [owner, repository, branch, ...fileParts].every(
+      (part) => GITHUB_PATH_COMPONENT_PATTERN.test(part) && part !== "." && part !== ".."
+    );
+    if (!safeComponents) return null;
+
+    return {
+      apiUrl: new URL(
+        `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}/commits/${encodeURIComponent(branch)}`
+      ),
+      immutableUrl(sha) {
+        const encodedPath = fileParts.map(encodeURIComponent).join("/");
+        return new URL(
+          `https://raw.githubusercontent.com/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}/${sha}/${encodedPath}`
+        );
+      }
+    };
+  }
+
+  async function fetchFreshLiveStatus(rawUrl) {
+    const source = githubStatusSource(rawUrl);
+
+    if (source) {
+      try {
+        const commit = await fetchJson(source.apiUrl.href);
+        const sha = cleanText(commit.sha, "", 40);
+        if (GIT_COMMIT_SHA_PATTERN.test(sha)) {
+          return await fetchJson(source.immutableUrl(sha).href);
+        }
+      } catch {
+        // GitHub API may be unavailable or rate-limited; GitHub Raw remains a safe fallback.
+      }
+    }
+
+    return fetchJson(rawUrl.href);
+  }
+
   async function refreshLiveStatus(config) {
     try {
-      lastLiveSnapshot = await fetchJson(config.url.href);
+      lastLiveSnapshot = await fetchFreshLiveStatus(config.url);
     } catch {
       // A transient status failure must never create a false live signal.
     }

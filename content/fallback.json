@@ -9,7 +9,7 @@
   "liveStatus": {
     "enabled": true,
     "url": "https://raw.githubusercontent.com/tears-mysthrala/gilraennr-links/status/content/status.json",
-    "pollSeconds": 90
+    "pollSeconds": 120
   },
   "featuredLinkId": "twitch",
   "disclosure": "Algunos enlaces de esta sección son de afiliación. Si compras a través de ellos, GilraenNR puede recibir una comisión sin coste adicional para ti.",
@@ -95,6 +95,17 @@
       "enabled": true,
       "order": 10,
       "label": "Apoyo"
+    },
+    {
+      "id": "throne",
+      "title": "Throne",
+      "url": "https://throne.com/gilraennr",
+      "description": "Lista de deseos y regalos para el canal.",
+      "icon": "gift",
+      "category": "support",
+      "enabled": true,
+      "order": 20,
+      "label": "Lista de deseos"
     },
     {
       "id": "x",

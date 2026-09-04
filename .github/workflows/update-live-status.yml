@@ -2,7 +2,10 @@ name: Update live status
 
 on:
   schedule:
-    - cron: "*/5 * * * *"
+    # GitHub recomienda evitar el inicio de la hora, cuando los schedules
+    # sufren más retrasos. Diez comprobaciones por hora mantienen una latencia
+    # máxima nominal de seis minutos sin caer en el concurrido patrón */5.
+    - cron: "4,10,16,22,28,34,40,46,52,58 * * * *"
   workflow_dispatch:
 
 permissions: {}
@@ -29,7 +32,7 @@ jobs:
       - name: Install the pinned stream probe
         run: python -m pip install --disable-pip-version-check --quiet "yt-dlp==2026.8.19"
 
-      - name: Probe configured channels
+      - name: Probe the primary Twitch channel
         shell: bash
         run: |
           set -euo pipefail
@@ -74,30 +77,17 @@ jobs:
           }
 
           twitch_url="$(channel_url twitch)"
-          youtube_url="$(channel_url youtube)"
-          kick_url="$(channel_url kick)"
-          youtube_probe_url=""
-          if [[ -n "$youtube_url" ]]; then
-            youtube_probe_url="${youtube_url%/}/live"
-          fi
-
           twitch="$(probe "$twitch_url")"
-          youtube="$(probe "$youtube_probe_url")"
-          kick="$(probe "$kick_url")"
 
           mkdir -p live-status
           jq -n \
             --arg checkedAt "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" \
             --arg twitch "$twitch" \
-            --arg youtube "$youtube" \
-            --arg kick "$kick" \
             '{
               version: 1,
               checkedAt: $checkedAt,
               probes: {
-                twitch: $twitch,
-                youtube: $youtube,
-                kick: $kick
+                twitch: $twitch
               }
             }' > live-status/probes.json
 
@@ -142,7 +132,7 @@ jobs:
           metadata="$(gh api \
             "repos/$repository/contents/content/status.json?ref=$branch" 2>/dev/null || true)"
           current_sha=""
-          current='{"online":false,"expiresAt":null,"platforms":{"twitch":false,"youtube":false,"kick":false}}'
+          current='{"online":false,"expiresAt":null,"platforms":{"twitch":false}}'
 
           if [[ -n "$metadata" ]]; then
             current_sha="$(jq -r '.sha' <<<"$metadata")"
@@ -158,41 +148,23 @@ jobs:
           }
 
           twitch_probe="$(jq -r '.probes.twitch' live-status/probes.json)"
-          youtube_probe="$(jq -r '.probes.youtube' live-status/probes.json)"
-          kick_probe="$(jq -r '.probes.kick' live-status/probes.json)"
 
           twitch="$(resolve_probe "$twitch_probe" "$(jq -r '.platforms.twitch // false' <<<"$current")")"
-          youtube="$(resolve_probe "$youtube_probe" "$(jq -r '.platforms.youtube // false' <<<"$current")")"
-          kick="$(resolve_probe "$kick_probe" "$(jq -r '.platforms.kick // false' <<<"$current")")"
 
           confirmed_online=false
-          if [[ "$twitch_probe" == online || "$youtube_probe" == online || "$kick_probe" == online ]]; then
+          if [[ "$twitch_probe" == online ]]; then
             confirmed_online=true
           fi
-
-          # A confirmed live result may extend the aggregate snapshot, so do
-          # not let it extend an unrelated platform's carried-forward state.
-          if [[ "$confirmed_online" == true ]]; then
-            [[ "$twitch_probe" == unknown ]] && twitch=false
-            [[ "$youtube_probe" == unknown ]] && youtube=false
-            [[ "$kick_probe" == unknown ]] && kick=false
-          fi
-
-          online=false
-          if [[ "$twitch" == true || "$youtube" == true || "$kick" == true ]]; then
-            online=true
-          fi
+          online="$twitch"
 
           same_state=false
           if jq -e \
             --argjson online "$online" \
             --argjson twitch "$twitch" \
-            --argjson youtube "$youtube" \
-            --argjson kick "$kick" \
             '.online == $online and
              .platforms.twitch == $twitch and
-             .platforms.youtube == $youtube and
-             .platforms.kick == $kick' \
+             (.platforms.youtube // false) == false and
+             (.platforms.kick // false) == false' \
             <<<"$current" >/dev/null; then
             same_state=true
           fi
@@ -227,17 +199,13 @@ jobs:
             --arg expiresAt "$expires_at" \
             --argjson online "$online" \
             --argjson twitch "$twitch" \
-            --argjson youtube "$youtube" \
-            --argjson kick "$kick" \
             '{
               version: 1,
               checkedAt: $checkedAt,
               expiresAt: (if $expiresAt == "" then null else $expiresAt end),
               online: $online,
               platforms: {
-                twitch: $twitch,
-                youtube: $youtube,
-                kick: $kick
+                twitch: $twitch
               }
             }' > live-status/status.json
 

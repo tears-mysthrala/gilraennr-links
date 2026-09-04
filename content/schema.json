@@ -107,7 +107,7 @@
         },
         "description": { "type": "string", "maxLength": 240 },
         "icon": {
-          "enum": ["twitch", "youtube", "kick", "x", "instagram", "patreon", "gamepad", "store", "mail", "link"]
+          "enum": ["twitch", "youtube", "kick", "x", "instagram", "patreon", "gift", "gamepad", "store", "mail", "link"]
         },
         "category": {
           "type": "string",
