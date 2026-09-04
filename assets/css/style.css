@@ -129,52 +129,68 @@ svg {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(circle at 18% 38%, rgba(217, 154, 232, 0.06), transparent 22rem),
-    radial-gradient(circle at 86% 72%, rgba(238, 139, 104, 0.06), transparent 28rem);
+    radial-gradient(circle at 16% 28%, rgba(117, 139, 112, 0.09), transparent 24rem),
+    radial-gradient(circle at 86% 72%, rgba(238, 139, 104, 0.07), transparent 28rem);
   content: "";
 }
 
-.ambient-poly {
+.ambient-motif {
   position: absolute;
   display: block;
-  opacity: 0.11;
-  filter: blur(2.5px) drop-shadow(0 0 4.5rem rgba(217, 154, 232, 0.14));
+  overflow: visible;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
-.ambient-poly--one {
-  top: -5rem;
+.ambient-motif--contours {
+  top: 7rem;
+  left: -9rem;
+  width: 31rem;
+  color: #8ca084;
+  opacity: 0.1;
+  stroke-width: 2;
+  transform: rotate(-8deg);
+}
+
+.ambient-motif--route {
+  top: 5rem;
   right: -5rem;
-  width: 20rem;
-  height: 18rem;
-  background: conic-gradient(from 28deg, #d99ae8, #6e477c, #ee8b68, #8f557c, #d99ae8);
-  clip-path: polygon(48% 0, 100% 24%, 84% 83%, 30% 100%, 0 54%);
+  width: 32rem;
+  color: #9eacd2;
+  opacity: 0.13;
 }
 
-.ambient-poly--two {
-  top: 34%;
-  left: -8rem;
-  width: 18rem;
-  height: 21rem;
-  background: conic-gradient(from 120deg, #7781b7, #d99ae8, #4c315d, #ee8b68, #7781b7);
-  clip-path: polygon(25% 0, 92% 14%, 100% 67%, 58% 100%, 0 74%, 8% 28%);
+.ambient-route-line {
+  stroke-width: 2;
 }
 
-.ambient-poly--three {
-  right: -6rem;
-  bottom: 8%;
-  width: 22rem;
-  height: 18rem;
-  background: conic-gradient(from 210deg, #ee8b68, #6e4569, #d99ae8, #51496f, #ee8b68);
-  clip-path: polygon(19% 4%, 81% 0, 100% 43%, 74% 100%, 16% 87%, 0 38%);
+.ambient-route-line--secondary {
+  stroke-dasharray: 4 9;
 }
 
-.ambient-poly--four {
-  bottom: -5rem;
-  left: 26%;
-  width: 12rem;
-  height: 11rem;
-  background: conic-gradient(from 60deg, #ffd08a, #a15f72, #664272, #d99ae8, #ffd08a);
-  clip-path: polygon(50% 0, 100% 48%, 72% 100%, 12% 84%, 0 31%);
+.ambient-route-nodes {
+  fill: var(--ink);
+  stroke-width: 3;
+}
+
+.ambient-motif--mail {
+  right: 8%;
+  bottom: -3rem;
+  width: 19rem;
+  color: var(--ember-soft);
+  opacity: 0.09;
+  stroke-width: 2;
+  transform: rotate(7deg);
+}
+
+.ambient-mail-stamp {
+  stroke-dasharray: 2 5;
+}
+
+.ambient-mail-note {
+  stroke: var(--candle);
 }
 
 .site-header,
@@ -378,18 +394,6 @@ svg {
   content: "";
 }
 
-.featured::after {
-  position: absolute;
-  z-index: -1;
-  top: -3.5rem;
-  right: -4rem;
-  width: 15rem;
-  height: 13rem;
-  background: conic-gradient(from 38deg, rgba(241, 184, 255, 0.22), rgba(238, 139, 104, 0.18), rgba(119, 129, 183, 0.14), rgba(241, 184, 255, 0.22));
-  clip-path: polygon(47% 0, 100% 23%, 87% 80%, 37% 100%, 0 55%, 13% 17%);
-  content: "";
-}
-
 .featured[data-icon="twitch"] {
   --featured-accent: #d9b8ff;
 }
@@ -423,16 +427,16 @@ svg {
   width: 0.95rem;
   height: 0.95rem;
   background: var(--featured-accent);
-  clip-path: polygon(50% 0, 100% 38%, 79% 100%, 17% 86%, 0 28%);
+  border: 2px solid rgba(255, 248, 255, 0.34);
+  border-radius: 50%;
   opacity: 0.82;
-  transform: rotate(12deg);
 }
 
 .featured__signal span:nth-child(1) { top: 2.05rem; left: 0; width: 0.65rem; height: 0.65rem; }
-.featured__signal span:nth-child(2) { top: 1.05rem; left: 2.1rem; }
+.featured__signal span:nth-child(2) { top: 1.05rem; left: 2.1rem; border-radius: 0.2rem; transform: rotate(45deg); }
 .featured__signal span:nth-child(3) { top: 1.55rem; left: 4.45rem; width: 0.72rem; height: 0.72rem; }
 .featured__signal span:nth-child(4) { top: 0.45rem; left: 6.8rem; background: var(--candle); }
-.featured__signal span:nth-child(5) { top: 0.9rem; left: 9rem; width: 0.62rem; height: 0.62rem; }
+.featured__signal span:nth-child(5) { top: 0.9rem; left: 9rem; width: 0.62rem; height: 0.62rem; border-radius: 0.15rem; transform: rotate(12deg); }
 
 .featured__label {
   color: var(--featured-accent);
@@ -529,11 +533,13 @@ svg {
 }
 
 .section-heading h2::before {
-  width: 0.72rem;
-  height: 0.72rem;
+  width: 0.62rem;
+  height: 0.62rem;
   flex: 0 0 auto;
-  background: linear-gradient(135deg, var(--orchid-bright), var(--ember));
-  clip-path: polygon(50% 0, 100% 38%, 79% 100%, 17% 86%, 0 28%);
+  border: 2px solid var(--orchid-bright);
+  border-radius: 50%;
+  background: rgba(238, 139, 104, 0.3);
+  box-shadow: 0 0 0 4px rgba(217, 154, 232, 0.08);
   content: "";
 }
 
@@ -867,6 +873,29 @@ html.is-ready .site-footer {
 
 @keyframes loading {
   to { background-position: -220% 0; }
+}
+
+@media (max-width: 37.999rem) {
+  .ambient-motif--contours {
+    top: 6rem;
+    left: -12rem;
+    width: 25rem;
+    opacity: 0.08;
+  }
+
+  .ambient-motif--route {
+    top: 19rem;
+    right: -11rem;
+    width: 27rem;
+    opacity: 0.1;
+  }
+
+  .ambient-motif--mail {
+    right: -5rem;
+    bottom: -1rem;
+    width: 15rem;
+    opacity: 0.07;
+  }
 }
 
 @media (min-width: 38rem) {

@@ -79,10 +79,33 @@
     </svg>
 
     <div class="ambient-scene" aria-hidden="true">
-      <span class="ambient-poly ambient-poly--one"></span>
-      <span class="ambient-poly ambient-poly--two"></span>
-      <span class="ambient-poly ambient-poly--three"></span>
-      <span class="ambient-poly ambient-poly--four"></span>
+      <svg class="ambient-motif ambient-motif--contours" viewBox="0 0 360 320" focusable="false">
+        <path d="M22 190C28 92 117 30 215 43c73 10 130 65 121 131-10 79-107 126-192 113C70 276 17 244 22 190Z"/>
+        <path d="M63 186c6-68 67-109 136-101 52 6 94 42 88 86-7 55-75 86-135 78-53-7-93-26-89-63Z"/>
+        <path d="M105 183c3-38 38-61 77-57 30 4 54 24 50 49-4 31-42 49-76 45-30-4-53-16-51-37Z"/>
+        <path d="M145 180c2-16 17-26 34-24 13 1 23 10 22 20-2 13-18 21-33 19-13-2-24-7-23-15Z"/>
+      </svg>
+
+      <svg class="ambient-motif ambient-motif--route" viewBox="0 0 420 260" focusable="false">
+        <path class="ambient-route-line" d="M20 196C77 196 88 133 141 133s66 41 115 19c38-17 51-75 98-79 20-2 35 5 49 17"/>
+        <path class="ambient-route-line ambient-route-line--secondary" d="M142 133c9-56 48-85 92-103M256 152c28 28 49 47 89 66"/>
+        <g class="ambient-route-nodes">
+          <circle cx="20" cy="196" r="7"/>
+          <rect x="130" y="122" width="22" height="22" rx="5"/>
+          <circle cx="256" cy="152" r="8"/>
+          <rect x="345" y="62" width="19" height="19" rx="4"/>
+          <circle cx="403" cy="90" r="6"/>
+          <rect x="226" y="21" width="17" height="17" rx="4"/>
+          <circle cx="345" cy="218" r="7"/>
+        </g>
+      </svg>
+
+      <svg class="ambient-motif ambient-motif--mail" viewBox="0 0 300 240" focusable="false">
+        <path class="ambient-mail-card" d="M58 31h184v132H58z"/>
+        <path class="ambient-mail-fold" d="m59 45 91 70 91-70M59 162l66-62m116 62-66-62"/>
+        <circle class="ambient-mail-stamp" cx="210" cy="62" r="15"/>
+        <path class="ambient-mail-note" d="M35 73 17 190l178 27 8-54"/>
+      </svg>
     </div>
 
     <header class="site-header">
