@@ -749,14 +749,15 @@ svg {
 
 .site-footer {
   display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-  align-items: center;
+  flex-direction: row;
+  gap: 1rem;
+  align-items: baseline;
+  justify-content: space-between;
   padding-block: 1.4rem 2rem;
   border-top: 1px solid var(--line);
   color: var(--muted);
   font-size: 0.78rem;
-  text-align: center;
+  text-align: left;
   visibility: hidden;
 }
 
@@ -767,6 +768,10 @@ html.is-ready .site-footer {
 
 .site-footer p {
   margin: 0;
+}
+
+.site-footer p:last-child {
+  text-align: right;
 }
 
 .unavailable-panel {
@@ -900,10 +905,6 @@ html.is-ready .site-footer {
     min-height: 75rem;
   }
 
-  .site-footer {
-    flex-direction: row;
-    justify-content: center;
-  }
 }
 
 @media (min-width: 56rem) {
