@@ -187,6 +187,18 @@
       "order": 30,
       "featured": false,
       "label": "Afiliado"
+    },
+    {
+      "id": "amazon",
+      "title": "Amazon",
+      "url": "https://amzn.to/4A9Phs7",
+      "description": "Compra en Amazon con el enlace de referido de GilraenNR.",
+      "icon": "store",
+      "category": "partners",
+      "enabled": true,
+      "order": 40,
+      "featured": false,
+      "label": "Afiliado"
     }
   ]
 }
