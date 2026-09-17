@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "checkedAt": "2026-09-17T15:01:15Z",
-  "expiresAt": "2026-09-17T15:31:24Z",
-  "online": false,
+  "checkedAt": "2026-09-17T18:58:29Z",
+  "expiresAt": "2026-09-17T19:43:36Z",
+  "online": true,
   "platforms": {
-    "twitch": false
+    "twitch": true
   }
 }
